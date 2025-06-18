@@ -23,6 +23,7 @@ class BackupManager:
             self.backup_archive = BackupArchive(
                 self.source_dir, compressed, compression_type=compression_type
             )
+            logging.debug(f"Backup archive: {self.backup_archive}")
         except Exception as e:
             logging.error(f"BackupManager initialization failed: {e}")
             raise
@@ -37,6 +38,7 @@ class BackupManager:
             )
             self.session.add(dir_mod)
             self.session.flush()
+            logging.debug(f"Directory metadata saved: {dir_mod}")
 
             backup_mod = BackupModel(
                 directory_id=dir_mod.id,
@@ -54,6 +56,7 @@ class BackupManager:
             )
             self.session.add(backup_mod)
             self.session.commit()
+            logging.info("Backup metadata saved successfully.")
         except Exception as e:
             self.session.rollback()
             logging.error(f"Failed to save backup metadata: {e}")
@@ -62,6 +65,7 @@ class BackupManager:
     def close(self):
         try:
             self.session.close()
+            logging.info("Session closed.")
         except Exception as e:
             logging.error(f"Failed to close session: {e}")
 

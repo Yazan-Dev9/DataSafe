@@ -81,11 +81,12 @@ class BackupArchive:
             self.compression_type.value
         ):
             raise ValueError(
-                f"Unsupported compression type: {self.compression_type.value}. "
+                f"Unsupported compression type: {self.compression_type.value}."
                 f"Supported: {[c.value for c in CompressionType]}"
             )
         try:
             self.backup_path.mkdir(parents=True, exist_ok=True)
+            logging.debug(f"Created backup path: {self.backup_path}")
         except Exception as e:
             logging.error(f"Failed to create backup path: {e}")
             raise
@@ -130,9 +131,11 @@ class BackupArchive:
         if self.compression_type == CompressionType.TAR:
             with tarfile.open(str(self.backup_file), "w") as tar:
                 tar.add(str(self.source.path), arcname=self.source.name)
+                logging.debug(f"Added {self.source.path} to archive")
         elif self.compression_type == CompressionType.TAR_GZ:
             with tarfile.open(str(self.backup_file), "w:gz") as tar:
                 tar.add(str(self.source.path), arcname=self.source.name)
+                logging.debug(f"Added {self.source.path} to archive")
         elif self.compression_type == CompressionType.ZIP:
             with zipfile.ZipFile(
                 str(self.backup_file), "w", zipfile.ZIP_DEFLATED
@@ -142,11 +145,13 @@ class BackupArchive:
                         Path(self.source.name) / file.relative_to(self.source.path)
                     )
                     zipf.write(str(file), arcname=arcname)
+                    logging.debug(f"Added {file} to archive")
         else:
             raise ValueError(f"Unknown compression type: {self.compression_type.value}")
 
     def _move(self):
         dest = self.backup_path / self.source.name
+        logging.debug(f"Moving {self.source.path} to {dest}")
         if dest.exists():
             logging.warning(f"Destination '{dest}' already exists. Skipping move.")
         else:
